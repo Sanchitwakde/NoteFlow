@@ -1,0 +1,131 @@
+{% extends 'notes_app/base.html' %}
+{% block title %}My Notes — NoteFlow{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value">{{ total_notes }}</div>
+            <div class="stat-label">Total Notes</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ pinned_count }}</div>
+            <div class="stat-label">Pinned</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ notes|length }}</div>
+            <div class="stat-label">Showing</div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <form method="get" id="filterForm">
+        <div class="toolbar">
+            <div class="search-wrap">
+                <span class="icon">🔍</span>
+                <input
+                    type="text"
+                    name="q"
+                    class="search-input"
+                    placeholder="Search notes..."
+                    value="{{ query }}"
+                    oninput="debounceSubmit()"
+                >
+            </div>
+            <select name="category" class="filter-select" onchange="document.getElementById('filterForm').submit()">
+                <option value="">All Categories</option>
+                {% for value, label in categories %}
+                <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            {% if query or selected_category %}
+            <a href="{% url 'home' %}" class="btn btn-ghost btn-sm">✕ Clear</a>
+            {% endif %}
+        </div>
+    </form>
+
+    <!-- Notes Grid -->
+    {% if notes %}
+    <div class="notes-grid">
+        {% for note in notes %}
+        <div class="note-card {% if note.is_pinned %}pinned{% endif %}" id="card-{{ note.pk }}">
+            <div class="note-header">
+                <a href="{% url 'detail_note' note.pk %}" class="note-title">{{ note.title }}</a>
+                <button
+                    class="pin-btn {% if note.is_pinned %}active{% endif %}"
+                    onclick="togglePin({{ note.pk }}, this)"
+                    title="{% if note.is_pinned %}Unpin{% else %}Pin{% endif %}"
+                >📌</button>
+            </div>
+
+            <p class="note-content-preview">{{ note.content }}</p>
+
+            <div class="note-footer">
+                <span class="badge badge-{{ note.category }}">{{ note.get_category_display }}</span>
+                <span class="note-meta">{{ note.updated_at|date:"M d, Y" }}</span>
+            </div>
+
+            <div class="note-actions">
+                <a href="{% url 'edit_note' note.pk %}" class="btn btn-ghost btn-sm">✏ Edit</a>
+                <a href="{% url 'delete_note' note.pk %}" class="btn btn-danger btn-sm">🗑 Delete</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📝</div>
+        {% if query or selected_category %}
+        <h3>No notes match your search</h3>
+        <p>Try different keywords or <a href="{% url 'home' %}" style="color:var(--accent)">clear filters</a></p>
+        {% else %}
+        <h3>Your canvas is empty</h3>
+        <p style="margin-bottom:1.5rem;">Start capturing your thoughts, ideas, and to-dos</p>
+        <a href="{% url 'create_note' %}" class="btn btn-primary">+ Create your first note</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Debounced search
+    let searchTimer;
+    function debounceSubmit() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            document.getElementById('filterForm').submit();
+        }, 500);
+    }
+
+    // Toggle Pin via AJAX
+    function togglePin(noteId, btn) {
+        fetch(`/notes/${noteId}/pin/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            const card = document.getElementById(`card-${noteId}`);
+            if (data.pinned) {
+                btn.classList.add('active');
+                card.classList.add('pinned');
+                btn.title = 'Unpin';
+            } else {
+                btn.classList.remove('active');
+                card.classList.remove('pinned');
+                btn.title = 'Pin';
+            }
+        })
+        .catch(err => console.error('Pin toggle failed:', err));
+    }
+</script>
+{% endblock %}

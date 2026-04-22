@@ -1,0 +1,22 @@
+{% extends 'notes_app/base.html' %}
+{% block title %}Delete Note — NoteFlow{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="confirm-card">
+        <div class="confirm-icon">🗑</div>
+        <h2 class="confirm-title">Delete this note?</h2>
+        <p class="confirm-text">
+            You're about to permanently delete <strong>"{{ note.title }}"</strong>.
+            This action cannot be undone.
+        </p>
+        <div class="confirm-actions">
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+            </form>
+            <a href="{% url 'home' %}" class="btn btn-ghost">Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
