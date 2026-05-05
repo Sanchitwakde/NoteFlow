@@ -5,8 +5,6 @@
 
 A full-featured notes-taking web application built to help you capture and organize your thoughts easily.
 
-**Author:** Soham Santosh Deshpande
-
 ---
 
 ## 🛠️ Tech Stack
