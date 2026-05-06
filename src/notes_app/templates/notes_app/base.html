@@ -549,7 +549,7 @@
         <div class="messages">
             {% for message in messages %}
             <div class="message {{ message.tags }}">
-                {% if message.tags == 'success' %}✓{% else %}⚠{% endif %}
+                {% if message.tags == 'success' %}&check;{% else %}!{% endif %}
                 {{ message }}
             </div>
             {% endfor %}

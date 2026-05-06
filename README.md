@@ -1,236 +1,181 @@
-# ✦ NoteFlow — Django + MySQL Notes App
+# NoteFlow
 
-A full-featured notes-taking web application built with:
-- **Frontend**: Plain HTML, CSS, JavaScript
-- **Backend**: Django (Python)
-- **Database**: MySQL
+NoteFlow is a Django notes app backed by MySQL. Users can register, log in, create notes, edit notes, delete notes, pin important notes, search by title or content, and filter notes by category.
 
----
+## Tech Stack
 
-## 📁 Project Structure
+- Python
+- Django 4.2
+- MySQL
+- HTML, CSS, and JavaScript
+- PyMySQL fallback for environments where `mysqlclient` is unavailable
 
-```
-notes_app/
-├── requirements.txt
-├── setup_mysql.sql
-├── README.md
-└── notes_project/
-    ├── manage.py
-    ├── notes_project/
-    │   ├── __init__.py
-    │   ├── settings.py
-    │   ├── urls.py
-    │   └── wsgi.py
-    └── notes_app/
-        ├── __init__.py
-        ├── apps.py
-        ├── models.py
-        ├── views.py
-        ├── forms.py
-        ├── urls.py
-        └── templates/
-            └── notes_app/
-                ├── base.html
-                ├── login.html
-                ├── register.html
-                ├── home.html
-                ├── note_form.html
-                ├── note_detail.html
-                └── confirm_delete.html
+## Project Structure
+
+```text
+NoteFlow/
++-- README.md
++-- requirements.txt
++-- setup_mysql.sql
++-- src/
+|   +-- manage.py
+|   +-- notes_project/
+|   |   +-- __init__.py
+|   |   +-- settings.py
+|   |   +-- urls.py
+|   |   +-- wsgi.py
+|   +-- notes_app/
+|       +-- forms.py
+|       +-- models.py
+|       +-- urls.py
+|       +-- views.py
+|       +-- migrations/
+|       +-- templates/
+|           +-- notes_app/
++-- venv/
 ```
 
----
+## Requirements
 
-## ⚙️ Prerequisites
-
-Make sure you have these installed:
-- Python 3.10+
-- MySQL 8.0+
+- Python 3.10 or newer
+- MySQL 8.0 or compatible
 - pip
 
----
+## Setup
 
-## 🚀 Setup Instructions
+1. Create and activate a virtual environment:
 
-### Step 1 — Set Up MySQL Database
-
-Open your MySQL shell:
-```bash
-mysql -u root -p
-```
-
-Then run the SQL setup script:
-```bash
-mysql -u root -p < setup_mysql.sql
-```
-
-Or paste the contents of `setup_mysql.sql` manually into the MySQL shell.
-
----
-
-### Step 2 — Create a Virtual Environment
-
-```bash
-# Navigate to the project folder
-cd notes_app
-
-# Create virtual environment
+```powershell
 python -m venv venv
-
-# Activate it
-# On Windows:
 venv\Scripts\activate
-
-# On macOS/Linux:
-source venv/bin/activate
 ```
 
----
+2. Install dependencies:
 
-### Step 3 — Install Dependencies
-
-```bash
+```powershell
 pip install -r requirements.txt
 ```
 
-> **Note for Windows users**: If `mysqlclient` fails to install, try:
-> ```bash
-> pip install mysqlclient --only-binary=mysqlclient
-> ```
-> Or install MySQL Connector as alternative:
-> ```bash
-> pip install mysql-connector-python
-> ```
-> Then update `settings.py` ENGINE to: `'mysql.connector.django'`
+3. Create the MySQL database:
 
----
+```powershell
+mysql -u root -p < setup_mysql.sql
+```
 
-### Step 4 — Configure Database Settings
+4. Check the database configuration in `src/notes_project/settings.py`.
 
-Open `notes_project/notes_project/settings.py` and update the `DATABASES` section:
+The current default configuration is:
 
 ```python
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'notes_db',           # Database name from setup_mysql.sql
-        'USER': 'notes_user',         # MySQL username
-        'PASSWORD': 'your_strong_password',  # MySQL password you set
-        'HOST': 'localhost',
-        'PORT': '3306',
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "notes_db",
+        "USER": "root",
+        "PASSWORD": "12345678",
+        "HOST": "localhost",
+        "PORT": "3306",
     }
 }
 ```
 
----
+Update those values if your MySQL username or password is different.
 
-### Step 5 — Run Migrations
+5. Run migrations:
 
-```bash
-cd notes_project
-
-# Create the database tables
-python manage.py makemigrations
-python manage.py migrate
+```powershell
+python src\manage.py migrate
 ```
 
----
+6. Start the development server:
 
-### Step 6 — Create an Admin Superuser (Optional)
-
-```bash
-python manage.py createsuperuser
+```powershell
+python src\manage.py runserver
 ```
 
----
+Open the app at:
 
-### Step 7 — Start the Development Server
-
-```bash
-python manage.py runserver
+```text
+http://127.0.0.1:8000/
 ```
 
-Open your browser and go to: **http://127.0.0.1:8000**
+## Useful Commands
 
----
+Run Django checks:
 
-## 🌟 Features
+```powershell
+python src\manage.py check
+```
 
-| Feature | Description |
-|---|---|
-| 🔐 User Authentication | Register, Login, Logout with session management |
-| 📝 Create Notes | Add title, content, category, and pin status |
-| ✏️ Edit Notes | Update any note at any time |
-| 🗑️ Delete Notes | With confirmation prompt to avoid accidents |
-| 📌 Pin Notes | Pin important notes to the top (via AJAX, no page reload) |
-| 🏷️ Categories | Personal, Work, Ideas, To-Do, Other |
-| 🔍 Search | Real-time debounced search across title and content |
-| 🔽 Filter | Filter notes by category |
-| 📊 Stats | See total notes and pinned count at a glance |
+Create an admin user:
 
----
+```powershell
+python src\manage.py createsuperuser
+```
 
-## 🗄️ Database Schema
+Open the Django admin:
 
-### `auth_user` (Django built-in)
-| Column | Type |
-|---|---|
-| id | INT (PK) |
-| username | VARCHAR |
-| email | VARCHAR |
-| password | VARCHAR (hashed) |
+```text
+http://127.0.0.1:8000/admin/
+```
 
-### `notes_app_note`
-| Column | Type | Description |
-|---|---|---|
-| id | INT (PK, auto) | Primary key |
-| user_id | INT (FK) | References auth_user |
-| title | VARCHAR(255) | Note title |
-| content | TEXT | Note body |
-| category | VARCHAR(20) | personal/work/ideas/todo/other |
-| is_pinned | BOOLEAN | Pinned to top |
-| created_at | DATETIME | Auto set on creation |
-| updated_at | DATETIME | Auto updated on save |
+## Features
 
----
+- User registration and login
+- Per-user notes
+- Create, read, update, and delete notes
+- Pin notes to the top
+- Search notes by title or content
+- Filter notes by category
+- Dashboard counts for total, pinned, and shown notes
+- AJAX pin toggle without a full page refresh
 
-## 🔗 URL Routes
+## Routes
 
-| URL | View | Description |
-|---|---|---|
-| `/` | home_view | Dashboard with all notes |
-| `/register/` | register_view | Create new account |
-| `/login/` | login_view | Log in |
-| `/logout/` | logout_view | Log out |
-| `/notes/create/` | create_note_view | New note form |
-| `/notes/<id>/` | detail_note_view | View a note |
-| `/notes/<id>/edit/` | edit_note_view | Edit a note |
-| `/notes/<id>/delete/` | delete_note_view | Delete confirmation |
-| `/notes/<id>/pin/` | toggle_pin_view | AJAX pin toggle |
-| `/admin/` | Django admin | Admin panel |
+| Route | Description |
+| --- | --- |
+| `/` | Notes dashboard |
+| `/register/` | Register a new account |
+| `/login/` | Log in |
+| `/logout/` | Log out |
+| `/notes/create/` | Create a note |
+| `/notes/<id>/` | View a note |
+| `/notes/<id>/edit/` | Edit a note |
+| `/notes/<id>/delete/` | Delete a note |
+| `/notes/<id>/pin/` | Toggle pinned status |
+| `/admin/` | Django admin |
 
----
+## Troubleshooting
 
-## 🛠️ Troubleshooting
+If `venv\Scripts\python.exe` points to a missing Python installation, recreate the virtual environment:
 
-**`mysqlclient` install error on Windows**
-Install MySQL C connector first from: https://dev.mysql.com/downloads/connector/c/
+```powershell
+Remove-Item -Recurse -Force venv
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-**`django.db.utils.OperationalError: (1045, "Access denied")`**
-Double-check your MySQL username/password in `settings.py`
+If Django reports `Error loading MySQLdb module`, install the project dependencies again:
 
-**`No module named 'notes_app'`**
-Make sure you're running commands from inside the `notes_project/` folder (where `manage.py` lives)
+```powershell
+pip install -r requirements.txt
+```
 
-**Templates not found**
-Ensure `'APP_DIRS': True` is set in `TEMPLATES` in `settings.py` (it is by default)
+The app includes a PyMySQL fallback, so it can run even when the compiled `mysqlclient` package is not available.
 
----
+If MySQL refuses the connection, confirm that:
 
-## 📌 Production Tips
+- MySQL is running
+- `notes_db` exists
+- the username and password in `src/notes_project/settings.py` are correct
 
-- Set `DEBUG = False` in `settings.py`
-- Move `SECRET_KEY` to an environment variable
-- Set `ALLOWED_HOSTS` to your domain
-- Use `python manage.py collectstatic` for static files
-- Use Gunicorn + Nginx for serving the app
+## Production Notes
+
+Before deploying this app:
+
+- Set `DEBUG = False`
+- Move `SECRET_KEY` into an environment variable
+- Replace `ALLOWED_HOSTS = ["*"]` with the real hostnames
+- Move database credentials out of source code
+- Configure static file serving
